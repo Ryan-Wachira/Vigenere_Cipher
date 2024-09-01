@@ -1,0 +1,95 @@
+import pyperclip  # Module to copy text to the clipboard, if installed.
+
+LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # All uppercase letters of the alphabet.
+
+def main():
+    # Introduction message.
+    print('Vigenère Cipher, by Ryan Wachira')
+    print('The Vigenère cipher is a polyalphabetic substitution cipher.')
+
+    # Ask the user if they want to encrypt or decrypt a message.
+    while True:
+        print('Do you want to (e)ncrypt or (d)ecrypt?')
+        response = input('> ').lower()
+        if response.startswith('e'):
+            myMode = 'encrypt'  # Set mode to encryption.
+            break
+        elif response.startswith('d'):
+            myMode = 'decrypt'  # Set mode to decryption.
+            break
+        print('Please enter the letter e or d.')
+
+    # Ask the user for the encryption/decryption key.
+    while True:
+        print('Please specify the key to use (a word or any combination of letters):')
+        response = input('> ').upper()
+        if response.isalpha():
+            myKey = response  # Store the key.
+            break
+
+    # Ask the user for the message to encrypt or decrypt.
+    print(f'Enter the message to {myMode}.')
+    myMessage = input('> ')
+
+    # Perform encryption or decryption based on the mode.
+    if myMode == 'encrypt':
+        translated = encryptMessage(myMessage, myKey)
+    elif myMode == 'decrypt':
+        translated = decryptMessage(myMessage, myKey)
+
+    # Display the encrypted/decrypted message.
+    print(f'{myMode.title()}ed message:')
+    print(translated)
+
+    # Copy the result to the clipboard, if possible.
+    try:
+        pyperclip.copy(translated)
+        print(f'Full {myMode}ed text copied to clipboard.')
+    except:
+        pass  # Ignore if pyperclip is not installed.
+
+def encryptMessage(message, key):
+    """Encrypt the message using the provided key."""
+    return translateMessage(message, key, 'encrypt')
+
+def decryptMessage(message, key):
+    """Decrypt the message using the provided key."""
+    return translateMessage(message, key, 'decrypt')
+
+def translateMessage(message, key, mode):
+    """Handle both encryption and decryption of the message."""
+    translated = []  # List to store the translated characters.
+    keyIndex = 0  # Index for iterating through the key.
+    key = key.upper()  # Convert the key to uppercase.
+
+    for symbol in message:  # Loop through each character in the message.
+        num = LETTERS.find(symbol.upper())  # Find the index of the symbol in LETTERS.
+        if num != -1:  # If the symbol is found in LETTERS.
+            if mode == 'encrypt':
+                num += LETTERS.find(key[keyIndex])  # Add the key's letter value for encryption.
+            elif mode == 'decrypt':
+                num -= LETTERS.find(key[keyIndex])  # Subtract the key's letter value for decryption.
+
+            num %= len(LETTERS)  # Ensure the index wraps around if needed.
+
+            # Append the corresponding translated character.
+            if symbol.isupper():
+                translated.append(LETTERS[num])
+            elif symbol.islower():
+                translated.append(LETTERS[num].lower())
+
+            # Move to the next letter in the key.
+            keyIndex += 1
+            if keyIndex == len(key):  # Wrap around to the beginning of the key if needed.
+                keyIndex = 0
+        else:
+            # Append symbols that are not in LETTERS without changing them.
+            translated.append(symbol)
+
+    return ''.join(translated)  # Return the translated message as a string.
+
+# If the script is executed, run the main function.
+if __name__ == '__main__':
+    main()
+
+
